@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
-from src.impl import Datastore, Evaluator, Indexer, ResponseGenerator, EvaluationResult
+from src import Datastore, Evaluator, Indexer, ResponseGenerator, EvaluationResult
 
 
 @dataclass

@@ -2,6 +2,7 @@ from src.util.extract_xml import extract_xml_tag
 from .generation_model import GeneratorModel
 from transformers import T5Tokenizer, T5ForConditionalGeneration, BitsAndBytesConfig
 import torch
+import os
 
 
 SYSTEM_PROMPT = """
@@ -37,7 +38,7 @@ You are an evaluation system that determines whether a generated answer from a l
 
 """
 
-HF_TOKEN = ""
+HF_TOKEN = os.environ["HF_TOKEN"]
 
 class EvaluationResult:
     def __init__(self, question, response, is_correct, reasoning=""):

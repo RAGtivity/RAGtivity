@@ -7,12 +7,12 @@ from typing import List
 from src.rag_pipeline import RAGPipeline
 from create_parser import create_parser
 
-from src.impl import Datastore, Indexer, ResponseGenerator, Evaluator
+from src import Datastore, Indexer, ResponseGenerator, Evaluator
 
 
 DEFAULT_SOURCE_PATH = "sample_data/source/"
 DEFAULT_EVAL_PATH = "sample_data/eval/sample_questions.json"
-HF_TOKEN = ""
+HF_TOKEN = os.environ["HF_TOKEN"]
 
 
 def main():

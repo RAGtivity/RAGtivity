@@ -1,7 +1,8 @@
 from transformers import T5Tokenizer, T5ForConditionalGeneration, BitsAndBytesConfig
 import torch
+import os
 
-HF_TOKEN = ""
+HF_TOKEN = os.environ["HF_TOKEN"]
 
 # Singleton class
 class GeneratorModel:

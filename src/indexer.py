@@ -2,7 +2,7 @@ import os
 import numpy as np
 from typing import List
 from docling.document_converter import DocumentConverter
-from src.impl import Datastore
+from src import Datastore
 from .dataitem import DataItem
 import nltk
 nltk.download('punkt_tab')
