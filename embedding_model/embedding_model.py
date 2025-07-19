@@ -1,10 +1,6 @@
 from sentence_transformers import SentenceTransformer
 from fastapi import FastAPI
 from typing import List
-from pydantic import BaseModel
-
-class EmbeddingRequest(BaseModel):
-    contents: List[str]
 
 class EmbeddingModel:
     def __init__(self):
@@ -25,8 +21,9 @@ def startup():
 
 
 @app.post("/")
-def get_embedding(request: EmbeddingRequest):
+def get_embedding(contents: List[str]):
     """
+    Encode a list of sentences
     Parameters:
         request: POST request containing 'contents' field
     Return value:
@@ -37,8 +34,7 @@ def get_embedding(request: EmbeddingRequest):
         where:
             embeddings: List[str]
     """
-    contents = request.contents
     embeddings = []
     for content in contents:
         embeddings.append(model.get_embedding(content))
-    return {"embeddings": embeddings}
+    return embeddings

@@ -24,9 +24,9 @@ def hello():
     return {"Response": "Hello!"}
 
 @app.post("/")
-async def chunk(file: UploadFile):
-    chunked = await chunker.chunk(file)
-    return {"chunked": chunked}
+async def chunk(document: UploadFile):
+    chunked = await chunker.chunk(document)
+    return chunked
 
 
 
@@ -35,34 +35,61 @@ class Chunker:
         self.converter = DocumentConverter()
         os.environ["TOKENIZERS_PARALLELISM"] = "false" # Disable tokenizers parallelism to avoid OOM errors.
 
-    async def chunk(self, document: UploadFile) -> DataItem:
-        # Get files bytes
-        file_bytes = await document.read()
-        # Wrap in BytesIO
-        document_buffer = BytesIO(file_bytes)
-        # Wrap in DocumentStream
-        source = DocumentStream(name=document.filename, stream=document_buffer)
-        # Convert document to docling
-        document_converted = self.converter.convert(source)
-        # Convert to markdown
-        markdown_text = document_converted.document.export_to_markdown()
-        # Tokenize each sentences
-        sentences = sent_tokenize(markdown_text)
+    async def chunk(self, document: UploadFile) -> List[DataItem]:
+        """
+        Chunks a document into smaller more managable pieces using semantic chunking.
+
+        Parameter:
+            document: UploadFile
+        Return value:
+            List[DataItem]
+        """
+        try:
+            # Get files bytes
+            file_bytes = await document.read()
+        except Exception as e:
+            raise Exception("Something went wrong while reading the document content.\n" + str(e))
         
+        try:
+            # Wrap in BytesIO
+            document_buffer = BytesIO(file_bytes)
+            # Wrap in DocumentStream
+            source = DocumentStream(name=document.filename, stream=document_buffer)
+            # Convert document to docling
+            document_converted = self.converter.convert(source)
+            # Convert to markdown
+            markdown_text = document_converted.document.export_to_markdown()
+        except Exception as e:
+            raise Exception("Document converseion failed.\n" + str(e))
+        
+        try:
+            # Tokenize each sentences
+            sentences = sent_tokenize(markdown_text)
+        except Exception as e:
+            raise Exception("Document tokenization failed.\n" + str(e))
+
+        
+        # Get encoded version of the sentences
         response = requests.post(
             "http://embedding_model:8000",
-            json={"contents": sentences}
+            json=sentences
             )
+        
+        # Check if not 200 OK
+        if not response.ok:
+            raise Exception(f"Embedding model failed. Status code: {response.status_code}: {response.text}")
 
-        embeddings = response.json()["embeddings"]
+        
+        embeddings = response.json()
         print(f"Generated {len(embeddings)} sentence embeddings.")
 
 
+        # Semantic chunking
         similarities = [self.cosine_similarity(embeddings[i], embeddings[i + 1]) for i in range(len(embeddings) - 1)] 
         breakpoints = self.compute_breakpoints(similarities, method="percentile", threshold=90) 
 
         # Create chunks using the split_into_chunks function, passing the document path as source
-        items    = self.split_into_chunks(sentences, breakpoints, filename=document.filename)
+        items = self.split_into_chunks(sentences, breakpoints, filename=document.filename)
 
         # Print the number of chunks created
         print(f"Number of semantic chunks: {len(items)}") 

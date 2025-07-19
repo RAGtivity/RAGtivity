@@ -19,8 +19,6 @@ services:
       - ./chunker:/app
       - ./shared:/app/shared
     container_name: chunker
-    ports:
-      - "8000:8000"
     # develop:
     #   watch:
     #     - action: sync
@@ -34,5 +32,13 @@ services:
       - ./datastore:/app
       - ./shared:/app/shared
     container_name: datastore
+
+  pipeline:
+    build:
+      context: ./pipeline
+    volumes:
+       - ./pipeline:/app
+       - ./shared:/app/shared
+    container_name: pipeline
     ports:
-    - "8001:8000"
+      - "8000:8000"

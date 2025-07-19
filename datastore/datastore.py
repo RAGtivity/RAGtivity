@@ -5,10 +5,6 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from shared.dataitem import DataItem
 
-
-class DatastoreRequest(BaseModel):
-    item: DataItem
-
 class Datastore:
 
     def __init__(self):
@@ -23,34 +19,44 @@ class Datastore:
         self.filenames = []
         print("✅ Datastore reset - all data cleared")
 
-    def add_item(self, item) -> None:
+    def add_items(self, items) -> None:
         """
-        Add a DataItem to the datastore.
+        Add list of DataItem to the datastore.
         
         Parameters:
-            item: DataItem
+            items: List[DataItem]
         """
-        try:
-            embedding = requests.post(
+        for item in items:
+            response = requests.post(
                 "http://embedding_model:8000/",
-                json={"contents": [item.content]}
+                json=[item.content]
                 )
 
+            if not response.ok:
+                raise Exception(f"Error while adding item to datastore. Response code: {response.status_code}. {response.text}")
+
             self.filenames.append(item.filename)
-        except Exception as e:
-            print("Error while adding item to datastore: ", e)
-        embed = embedding.json()["embeddings"]
-        self.embeddings.append(embed)
-        self.contents.append(item.content)
+            embeddings = response.json()
+            self.embeddings.append(embeddings)
+            self.contents.append(item.content)
+            
 
     def search(self, query: str, top_k: int = 3) -> List[str]:
         """Search for similar content using cosine similarity."""
+        # Check if there is anything in the datastore
         if not self.embeddings:
             return []
         
-        query_embedding = self.get_embedding(query)
-        similarities = []
+        # Encode query
+        response = requests.post(
+            "http://127.0.0.1:8000",
+            json=[query]
+        )
+        if not response.ok:
+            raise Exception(f"Something went wrong when encoding user query. Response status: {response.status_code}. {response.text}")
+        query_embedding = response.json()
         
+        similarities = []
         # Calculate cosine similarity with all stored embeddings
         for stored_embedding in self.embeddings:
             similarity = self._cosine_similarity(query_embedding, stored_embedding)
@@ -78,12 +84,6 @@ def startup():
     datastore = Datastore()
 
 @app.post("/")
-def store(request: DatastoreRequest):
-    item = request.item
-
-    try:
-        datastore.add_item(item)
-    except Exception as e:
-        return {"Error": e}
-
-    return {"Response": "200 OK"}
+def store(items: List[DataItem]):
+    datastore.add_items(items)
+    return {"Response": "Document successfully stored"}
