@@ -1,5 +1,5 @@
 from src.util.extract_xml import extract_xml_tag
-from .generation_model import GeneratorModel
+from generator.generator import GeneratorModel
 from transformers import T5Tokenizer, T5ForConditionalGeneration, BitsAndBytesConfig
 import torch
 import os

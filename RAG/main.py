@@ -5,10 +5,9 @@ from fastapi import FastAPI, Request
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' 
 from huggingface_hub import login
 from typing import List
-from src.rag_pipeline import RAGPipeline
+from pipeline.pipeline import RAGPipeline
 from create_parser import create_parser
 
-from src import Datastore, Indexer, ResponseGenerator, Evaluator
 
 
 DEFAULT_SOURCE_PATH = "sample_data/source/"

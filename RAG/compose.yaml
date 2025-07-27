@@ -23,6 +23,7 @@ services:
     volumes:
       - ./datastore:/app
       - ./shared:/app/shared
+      - ./chroma_store:/app/chroma_store 
     container_name: datastore
     depends_on:
       - embedding_model

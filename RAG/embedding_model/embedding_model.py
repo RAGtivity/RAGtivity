@@ -4,7 +4,7 @@ from typing import List
 
 class EmbeddingModel:
     def __init__(self):
-        self.model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', device='cpu')
+        self.model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
     def get_embedding(self, content):
         embedding = self.model.encode(content, convert_to_numpy=True)

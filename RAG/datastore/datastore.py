@@ -4,76 +4,70 @@ import requests
 from fastapi import FastAPI
 from pydantic import BaseModel
 from shared.dataitem import DataItem
+import chromadb
 
 class Datastore:
-
     def __init__(self):
-        self.embeddings = []  # List of vectors
-        self.contents = []    # List of content strings
-        self.filenames = []     # List of filename strings
+        self.chroma_client = chromadb.PersistentClient(path="./chroma_store")
+        try:
+            self.chroma_client.delete_collection("documents")
+        except:
+            pass
+        self.collection = self.chroma_client.get_or_create_collection(name="documents")
 
     def reset(self):
-        """Clear all stored data."""
-        self.embeddings = []
-        self.contents = []
-        self.filenames = []
-        print("✅ Datastore reset - all data cleared")
+        try:
+            self.chroma_client.delete_collection("documents")
+        except:
+            pass  
+        self.collection = self.chroma_client.get_or_create_collection(name="documents")
+        print("✅ ChromaDB reset - all data cleared")
 
-    def add_items(self, items) -> None:
-        """
-        Add list of DataItem to the datastore.
-        
-        Parameters:
-            items: List[DataItem]
-        """
-        for item in items:
-            response = requests.post(
-                "http://embedding_model:8000/",
-                json=[item.content]
-                )
-
+    def add_items(self, items: List[DataItem]) -> None:
+        for i, item in enumerate(items):
+            response = requests.post("http://embedding_model:8000/", json=[item.content])
             if not response.ok:
-                raise Exception(f"Error while adding item to datastore. Response code: {response.status_code}. {response.text}")
+                raise Exception(f"Error while adding item to ChromaDB. Status code: {response.status_code}. {response.text}")
 
-            self.filenames.append(item.filename)
             embeddings = response.json()
-            self.embeddings.append(embeddings)
-            self.contents.append(item.content)
+            embedding = embeddings[0]
             
+            doc_id = f"{item.filename}_{i}" 
+
+            self.collection.add(
+                documents=[item.content],
+                embeddings=[embedding],
+                ids=[doc_id],
+                metadatas=[{"filename": item.filename}]
+            )
 
     def search(self, query: str, top_k: int = 3) -> List[str]:
-        """Search for similar content using cosine similarity."""
-        # Check if there is anything in the datastore
-        if not self.embeddings:
+        response = requests.post("http://embedding_model:8000/", json=[query])
+        if not response.ok:
+            raise Exception(f"Error while encoding query. Status code: {response.status_code}. {response.text}")
+        
+        embeddings = response.json()
+        query_embedding = embeddings[0] 
+        
+        all_docs = self.collection.get(include=["documents", "embeddings"])
+        
+        if not all_docs['documents']:
             return []
         
-        # Encode query
-        response = requests.post(
-            "http://embedding_model:8000",
-            json=[query]
-        )
-        if not response.ok:
-            raise Exception(f"Something went wrong when encoding user query. Response status: {response.status_code}. {response.text}")
-        query_embedding = response.json()
-        
         similarities = []
-        # Calculate cosine similarity with all stored embeddings
-        for stored_embedding in self.embeddings:
+        for stored_embedding in all_docs['embeddings']:
             similarity = self._cosine_similarity(query_embedding, stored_embedding)
             similarities.append(similarity)
         
-        # Get top_k most similar items
-        top_indices = np.argsort(similarities)[-top_k:][::-1]  # Sort descending
-        result_content = [self.contents[i] for i in top_indices]
+        top_indices = np.argsort(similarities)[-top_k:][::-1]
+        result_content = [all_docs['documents'][i] for i in top_indices]
         
         return result_content
 
     def _cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
-        """Calculate cosine similarity between two vectors."""
         vec1 = np.squeeze(np.array(vec1))
         vec2 = np.squeeze(np.array(vec2))
         return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
-
 
 app = FastAPI()
 datastore = None
