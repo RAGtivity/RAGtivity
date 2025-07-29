@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import MainLayout from './layouts/MainLayout'
 import Main from './components/main/Main'
 import DocumentWindow from './components/document/document_window'
@@ -11,32 +11,49 @@ function App() {
   const [loggedInEmail, setLoggedInEmail] = useState("")
   const [documents, setDocuments] = useState([])
 
+  // Load documents from database
+  useEffect(() => {
+    fetchDocuments()
+  }, [loggedInEmail])
+
+  // Fetch documents from database by user email
+  async function fetchDocuments() {
+    if (loggedInEmail != "") {
+      let response = await fetch("http://localhost:4000/documents?email=" + loggedInEmail)
+      response = await response.json()
+
+      let retrievedDocuments = response.documents
+      
+      const newDocuments = (retrievedDocuments || []).map((document, index) => ({
+        id: Date.now() + index,
+        filename: document.filename
+      }))
+
+      setDocuments(newDocuments)
+    }
+  }
+
+  // Add documents to database
   const addDocuments = async (newFiles) => {
     const formData = new FormData()
-    const documentsWithDetails = newFiles.map((file, index) => ({
-      id: Date.now() + index,
-      name: file.name,
-    }));
 
     // Populate form data
     formData.append("email", loggedInEmail)
     newFiles.forEach(file =>
       formData.append("files", file)
     )
-    console.log(formData)
     // Send files to backend server
     await fetch("http://localhost:4000/documents", {
       method: "POST",
       body: formData 
     })
-
-    setDocuments(prev => [...prev, ...documentsWithDetails]);
+    // Refresh document list
+    fetchDocuments()      
   };
-
+  
   const removeDocument = (index) => {
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
-
 
 
   return (

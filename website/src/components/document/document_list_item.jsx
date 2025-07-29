@@ -13,8 +13,8 @@ export default function DocumentListItem({
             {/* Document Name Column */}
             <div className="col-span-4 flex items-center min-w-0">
                 <div className="min-w-0 flex-1">
-                    <h3 className="text-white font-medium truncate" title={doc.name}>
-                        {doc.name}
+                    <h3 className="text-white font-medium truncate" title={doc.filename}>
+                        {doc.filename}
                     </h3>
                 </div>
             </div>

@@ -29,7 +29,7 @@ export default function DocumentWindow({ documents = [], onRemoveDocument, onAdd
 
     // Filter documents based on search term
     const filteredDocuments = documents.filter(doc =>
-        doc.name.toLowerCase().includes(searchTerm.toLowerCase())
+        doc.filename.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const clearSearch = () => {

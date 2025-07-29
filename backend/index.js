@@ -1,14 +1,17 @@
 import express from 'express';
 import bcrypt, { hash } from 'bcrypt';
 import cors from 'cors';
-import atlas_uri from './atlas_uri.js';
 import { MongoClient } from 'mongodb';
 import fileUpload from "express-fileupload"
 import path from "node:path"
+import dotenv from "dotenv"
+
+dotenv.config()
 
 const app = express();
 const PORT = 4000;
-const mongoClient = new MongoClient(atlas_uri)
+const URI = process.env.MONGO_URI
+const mongoClient = new MongoClient(URI)
 const dbName = "ragtivity"
 
 async function connect_mongo() {
@@ -25,6 +28,33 @@ app.use(cors());
 app.use(fileUpload())
 app.use(express.json());
 
+// Get all user's document
+app.get("/documents", async (req, res) => {
+  const userEmail = req.query.email
+
+  // Get users collection
+  const usersCollection = mongoClient.db(dbName).collection("users")
+  
+  // Query user's documents
+  const queryUserDocuments = {email: userEmail}
+  const queryOptions = {projection: {documents:1, _id:0}}
+  let userDocuments
+  try {
+    userDocuments = await usersCollection.findOne(queryUserDocuments, queryOptions)
+    
+    // If user has no documents, return an empty list
+    if (Object.keys(userDocuments).length === 0) {
+      return res.json({
+        documents: []
+      })
+    }
+  }
+  catch (err) {
+    return res.status(500).json({message: "Something went wrong while querying user's documents. Error message: " + err})
+  }
+
+  return res.json({documents: userDocuments.documents})
+})
 
 // Upload documents 
 app.post("/documents", async (req, res) => {
@@ -62,7 +92,7 @@ app.post("/documents", async (req, res) => {
   // Update query to MongoDB
   const queryAddFiles = {
     $push: {
-      documents: filesToInsert
+      documents: {$each: filesToInsert}
     }
   }
   // Add newly added documents to the user's document in the database
