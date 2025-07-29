@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import './Signup.css';
+import { NavLink, useNavigate } from 'react-router';
 
-function Signup({ onSignup, onSwitchToLogin }) {
+function Signup() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,7 +48,7 @@ function Signup({ onSignup, onSwitchToLogin }) {
       if (res.ok) {
         setSuccess('Account created! You can now log in.');
         setFormData({ email: '', password: '' });
-        if (onSignup) onSignup();
+        navigate("/login")
       } else {
         setErrors({ general: data.message || 'Sign up failed.' });
       }
@@ -104,7 +106,9 @@ function Signup({ onSignup, onSwitchToLogin }) {
         </form>
         <div className="signup-footer">
           <span className="signup-footer-text">Already have an account? </span>
-          <button onClick={onSwitchToLogin} className="signup-footer-link">Log in</button>
+          <NavLink to="/login">
+            <button className="signup-footer-link">Log in</button>
+          </NavLink>
         </div>
       </div>
     </div>

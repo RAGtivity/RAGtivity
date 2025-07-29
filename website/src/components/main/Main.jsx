@@ -1,7 +1,17 @@
+import { useEffect } from "react";
 import Add_document from "../main/Add_document"
 import Send from "../main/Send"
+import { useNavigate } from "react-router";
 
-function Main({onAddDocuments}) {
+function Main({loggedInEmail, onAddDocuments}) {
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if (loggedInEmail == "") {
+            navigate("/login")
+        }
+    }, [loggedInEmail, navigate])
+
     const handleSendQuery = (query) => {
         console.log('Processing query:', query);
         // Add your query processing logic here

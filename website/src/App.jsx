@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Sidebar from "./components/sidebar/Sidebar"
+import MainLayout from './layouts/MainLayout'
 import Main from './components/main/Main'
 import DocumentWindow from './components/document/document_window'
 import Login from './components/auth/Login'
@@ -8,8 +8,7 @@ import Settings from './components/settings/setting'
 import { BrowserRouter, Routes, Route } from 'react-router'
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [showSignup, setShowSignup] = useState(false)
+  const [loggedInEmail, setLoggedInEmail] = useState("")
   const [documents, setDocuments] = useState([])
 
   const addDocuments = (newFiles) => {
@@ -26,27 +25,19 @@ function App() {
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
-  if (!isLoggedIn) {
-    if (showSignup) {
-      return <Signup onSignup={() => setShowSignup(false)} onSwitchToLogin={() => setShowSignup(false)} />
-    }
-    return <Login onLogin={() => setIsLoggedIn(true)} onSwitchToSignup={() => setShowSignup(true)} />
-  }
 
 
   return (
     <BrowserRouter>
-      <div className='flex'>
-        <Sidebar 
-          documents={documents} 
-          onRemoveDocument={removeDocument}
-        />
-          <Routes>
-            <Route index element={<Main onAddDocuments={addDocuments}/>} />
+        <Routes>
+          <Route element={<MainLayout documents={documents} removeDocument={removeDocument} />}>
+            <Route index element={<Main loggedInEmail={loggedInEmail} onAddDocuments={addDocuments}/>} />
             <Route path="/documents" element={<DocumentWindow documents={documents} onRemoveDocument={removeDocument} onAddDocuments={addDocuments}/>} />
             <Route path="/settings" element={<Settings />} />
-          </Routes>
-      </div>
+          </Route>
+          <Route path="/login" element={<Login setLoggedInEmail={setLoggedInEmail}/>} />
+          <Route path="/signup" element={<Signup />} />
+        </Routes>
     </BrowserRouter>
   )
 }

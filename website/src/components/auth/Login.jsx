@@ -1,12 +1,14 @@
 import { useState } from 'react'
+import { NavLink, useNavigate } from 'react-router'
 
-function Login({ onLogin, onSwitchToSignup }) {
+function Login({ setLoggedInEmail }) {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -51,7 +53,8 @@ function Login({ onLogin, onSwitchToSignup }) {
       })
       const data = await res.json()
       if (res.ok) {
-        if (onLogin) onLogin()
+        setLoggedInEmail(formData.email)
+        navigate("/")
       } else {
         setErrors({ general: data.message || 'Login failed.' })
       }
@@ -122,7 +125,9 @@ function Login({ onLogin, onSwitchToSignup }) {
         </button>
         <div className="text-center mt-4">
           <span className="text-gray-400 text-xs">No account yet? </span>
-          <button onClick={onSwitchToSignup} className="text-blue-400 text-xs hover:underline">Sign up</button>
+          <NavLink to="/signup">
+            <button className="text-blue-400 text-xs hover:underline">Sign up</button>
+          </NavLink>
         </div>
       </div>
     </div>
