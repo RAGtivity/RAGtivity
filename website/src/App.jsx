@@ -42,13 +42,13 @@ function App() {
   return (
     <BrowserRouter>
         <Routes>
-          <Route element={<MainLayout documents={documents} removeDocument={removeDocument} />}>
+          <Route element={<MainLayout loggedInEmail={loggedInEmail} documents={documents} removeDocument={removeDocument} />}>
             <Route index element={<Main loggedInEmail={loggedInEmail} onAddDocuments={addDocuments}/>} />
-            <Route path="/documents" element={<DocumentWindow documents={documents} onRemoveDocument={removeDocument} onAddDocuments={addDocuments}/>} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="documents" element={<DocumentWindow documents={documents} onRemoveDocument={removeDocument} onAddDocuments={addDocuments}/>} />
+            <Route path="settings" element={<Settings />} />
           </Route>
-          <Route path="/login" element={<Login setLoggedInEmail={setLoggedInEmail}/>} />
-          <Route path="/signup" element={<Signup />} />
+          <Route path="login" element={<Login setLoggedInEmail={setLoggedInEmail}/>} />
+          <Route path="signup" element={<Signup />} />
         </Routes>
     </BrowserRouter>
   )
