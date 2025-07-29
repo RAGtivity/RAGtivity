@@ -1,12 +1,12 @@
 import express from 'express';
-import sqlite3 from 'sqlite3';
 import bcrypt, { hash } from 'bcrypt';
 import cors from 'cors';
 import atlas_uri from './atlas_uri.js';
 import { MongoClient } from 'mongodb';
+import fileUpload from "express-fileupload"
+import path from "node:path"
 
 const app = express();
-const db = new sqlite3.Database('./users.db');
 const PORT = 4000;
 const mongoClient = new MongoClient(atlas_uri)
 const dbName = "ragtivity"
@@ -17,13 +17,65 @@ async function connect_mongo() {
     console.log("Connected to MongoDB")
   }
   catch (err) {
-    console.error(```Error while connecting to MongoDB. ${e}```)
+    console.error(`Error while connecting to MongoDB. `, e)
   }
 }
 
 app.use(cors());
+app.use(fileUpload())
 app.use(express.json());
 
+
+// Upload documents 
+app.post("/documents", async (req, res) => {
+  const userEmail = req.body.email
+  let files = req.files.files
+  
+  const storagePath = "files"
+  let uploadPath
+
+  // Get user collection
+  const usersCollection = mongoClient.db(dbName).collection("users")
+  const queryGetUser = {email: userEmail}
+  let filesToInsert = []
+
+  if (Array.isArray(files) == false) {
+    files = [files]
+  }
+
+  // Loop through each file uploaded and store file to storage location
+  files.forEach(file => {
+    uploadPath = path.join(storagePath, file.name)
+    // Move file to storage location
+    file.mv(uploadPath, err => {
+      if (err) {
+        return res.status(500).send("Something went wrong while uploading file to storage. Error message: " + err)
+      }
+    })
+
+    filesToInsert.push({
+      filename: file.name,
+      uploadPath: uploadPath
+    })
+  })
+
+  // Update query to MongoDB
+  const queryAddFiles = {
+    $push: {
+      documents: filesToInsert
+    }
+  }
+  // Add newly added documents to the user's document in the database
+  try {
+    const result = await usersCollection.updateOne(queryGetUser, queryAddFiles)
+    console.log(result)
+  }
+  catch (err) {
+    res.status(500).send("Something went wrong while adding document to database. Error message: ", err)
+  }
+
+  res.send("Documents uploaded successfully")
+})
 
 // Signup endpoint
 app.post('/signup', async (req, res) => {
@@ -126,7 +178,7 @@ async function main() {
     await connect_mongo()
   }
   catch (err) {
-    console.error(`Error while connecting to MongoDB. ${e}`)
+    console.error(`Error while connecting to MongoDB. `, e)
   }
 
   app.listen(PORT, () => {

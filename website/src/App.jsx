@@ -11,14 +11,26 @@ function App() {
   const [loggedInEmail, setLoggedInEmail] = useState("")
   const [documents, setDocuments] = useState([])
 
-  const addDocuments = (newFiles) => {
-    console.log(newFiles)
+  const addDocuments = async (newFiles) => {
+    const formData = new FormData()
     const documentsWithDetails = newFiles.map((file, index) => ({
       id: Date.now() + index,
       name: file.name,
     }));
+
+    // Populate form data
+    formData.append("email", loggedInEmail)
+    newFiles.forEach(file =>
+      formData.append("files", file)
+    )
+    console.log(formData)
+    // Send files to backend server
+    await fetch("http://localhost:4000/documents", {
+      method: "POST",
+      body: formData 
+    })
+
     setDocuments(prev => [...prev, ...documentsWithDetails]);
-    console.log(documents)
   };
 
   const removeDocument = (index) => {
