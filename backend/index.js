@@ -5,6 +5,7 @@ import { MongoClient } from 'mongodb';
 import fileUpload from "express-fileupload"
 import path from "node:path"
 import dotenv from "dotenv"
+import fs from "fs"
 
 dotenv.config()
 
@@ -74,20 +75,27 @@ app.post("/documents", async (req, res) => {
   }
 
   // Loop through each file uploaded and store file to storage location
-  files.forEach(file => {
-    uploadPath = path.join(storagePath, file.name)
+ for (const file of files) {
+    uploadPath = path.join(storagePath, userEmail, file.name)
+
+    // Check if path exists. If not, make directory recursively
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(path.dirname(uploadPath), {recursive: true})
+    }
+
     // Move file to storage location
-    file.mv(uploadPath, err => {
-      if (err) {
+    try {
+      await file.mv(uploadPath)
+    }
+    catch (err) {
         return res.status(500).send("Something went wrong while uploading file to storage. Error message: " + err)
-      }
-    })
+    }
 
     filesToInsert.push({
       filename: file.name,
       uploadPath: uploadPath
     })
-  })
+  }
 
   // Update query to MongoDB
   const queryAddFiles = {
@@ -98,7 +106,6 @@ app.post("/documents", async (req, res) => {
   // Add newly added documents to the user's document in the database
   try {
     const result = await usersCollection.updateOne(queryGetUser, queryAddFiles)
-    console.log(result)
   }
   catch (err) {
     res.status(500).send("Something went wrong while adding document to database. Error message: ", err)
