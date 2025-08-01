@@ -1,0 +1,49 @@
+services:
+  embedding_model:
+    build:
+      context: ./embedding_model
+    volumes:
+      - ./embedding_model:/app
+      - ./shared:/app/shared
+    container_name: embedding_model
+    
+  chunker:
+    build:
+      context: ./chunker
+    volumes:
+      - ./chunker:/app
+      - ./shared:/app/shared
+    container_name: chunker
+    depends_on:
+      - embedding_model
+
+  datastore:
+    build:
+      context: ./datastore
+    volumes:
+      - ./datastore:/app
+      - ./shared:/app/shared
+      - ./chroma_store:/app/chroma_store 
+    container_name: datastore
+    depends_on:
+      - embedding_model
+
+  pipeline:
+    build:
+      context: ./pipeline
+    volumes:
+       - ./pipeline:/app
+       - ./shared:/app/shared
+    container_name: pipeline
+    ports:
+      - "8000:8000"
+    depends_on:
+      - chunker
+      - datastore
+      - generator
+    
+  generator:
+    build:
+      context: ./generator
+    volumes:
+      - ./generator:/app

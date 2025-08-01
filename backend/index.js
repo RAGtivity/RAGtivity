@@ -5,6 +5,7 @@ import { MongoClient } from 'mongodb';
 import fileUpload from "express-fileupload"
 import path from "node:path"
 import dotenv from "dotenv"
+import ragRoutes from './ragRoutes.js';
 
 dotenv.config()
 
@@ -13,6 +14,11 @@ const PORT = 4000;
 const URI = process.env.MONGO_URI
 const mongoClient = new MongoClient(URI)
 const dbName = "ragtivity"
+
+app.use(cors());
+app.use(fileUpload()); 
+app.use(express.json()); 
+app.use('/rag', ragRoutes);
 
 async function connect_mongo() {
   try {

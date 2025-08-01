@@ -1,0 +1,74 @@
+import glob
+import json
+import os
+from fastapi import FastAPI, Request
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' 
+from huggingface_hub import login
+from typing import List
+from pipeline.pipeline import RAGPipeline
+from create_parser import create_parser
+
+
+
+DEFAULT_SOURCE_PATH = "sample_data/source/"
+DEFAULT_EVAL_PATH = "sample_data/eval/sample_questions.json"
+HF_TOKEN = os.environ["HF_TOKEN"]
+
+
+app = FastAPI()
+pipeline = None
+
+@app.on_event("startup")
+def startup():
+    global pipeline
+    pipeline = RAGPipeline()
+
+
+
+@app.get("/")
+def query(query: str = ""):
+    if query == "":
+        return {"Response": "Chatbot is online!"}
+    else:
+        return {"Response": pipeline.process_query(query)}
+
+
+
+def main():
+    parser = create_parser()  # Create the CLI parser
+    args = parser.parse_args()
+    pipeline = RAGPipeline()
+
+    # Process source paths and eval path
+    source_path = args.path if args.path else DEFAULT_SOURCE_PATH
+    eval_path = args.eval_file if args.eval_file else DEFAULT_EVAL_PATH
+    document_paths = get_files_in_directory(source_path)
+
+    # Execute commands
+    if args.command in ["reset", "run"]:
+        print("🗑️  Resetting the database...")
+        pipeline.reset()
+
+    if args.command in ["add", "run"]:
+        print(f"🔍 Adding documents: {', '.join(document_paths)}")
+        pipeline.add_documents(document_paths)
+
+    if args.command in ["evaluate", "run"]:
+        print(f"📊 Evaluating using questions from: {eval_path}")
+        with open(eval_path, "r") as file:
+            sample_questions = json.load(file)
+        pipeline.evaluate(sample_questions)
+
+    if args.command == "query":
+        print(f"✨ Response: {pipeline.process_query(args.prompt)}")
+
+
+def get_files_in_directory(source_path: str) -> List[str]:
+    if os.path.isfile(source_path):
+        return [source_path]
+    return glob.glob(os.path.join(source_path, "*"))
+
+
+if __name__ == "__main__":
+    login(token=HF_TOKEN)
+    main()
