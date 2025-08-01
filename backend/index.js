@@ -83,6 +83,14 @@ app.post("/documents", async (req, res) => {
       fs.mkdirSync(path.dirname(uploadPath), {recursive: true})
     }
 
+    // Check if there's a duplicate file
+    const filenameDuplicate = fs.existsSync(uploadPath)
+
+    // If there is, check if content is the same by comparing the content's MD5 hash value
+    if (filenameDuplicate) {
+      return res.status(400).send("FILENAME_EXISTS")
+    }
+
     // Move file to storage location
     try {
       await file.mv(uploadPath)
@@ -111,7 +119,29 @@ app.post("/documents", async (req, res) => {
     res.status(500).send("Something went wrong while adding document to database. Error message: ", err)
   }
 
-  res.send("Documents uploaded successfully")
+  return res.send("Documents uploaded successfully")
+})
+
+app.post("/delete_document", async (req, res) => {
+  console.log(req.body)
+  const { email, filename } = req.body
+  const fileStoragePath = path.join("files", email, filename)
+
+  const usersCollection = mongoClient.db(dbName).collection("users")
+  
+  const queryIdentifyUser = {email: email}
+  const queryDeleteFile = {$pull: {documents: {filename: filename}}}
+  
+  try {
+    const deleteFileFromDB = await usersCollection.updateOne(queryIdentifyUser, queryDeleteFile)
+    const deleteFileFromStorage = fs.unlinkSync(fileStoragePath)
+
+  }
+  catch (err) {
+    return res.status(500).send("Something went wrong while deleting document. Error message: " + err)
+  }
+
+  return res.status(200).send("Document successfully deleted")
 })
 
 // Signup endpoint
