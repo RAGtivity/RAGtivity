@@ -102,9 +102,28 @@ app.post("/documents", async (req, res) => {
   const queryGetUser = {email: userEmail}
   let filesToInsert = []
 
+  // Check if the uploaded file has a same filename as previously uploaded ones
+  try {
+    let userDocuments = await usersCollection.findOne(queryGetUser, {projection: {documents:1, _id:0}})
+    userDocuments = userDocuments.documents    
+    for (const uploadedFile of files) {
+      for (const recordedFile of userDocuments) {
+        if (uploadedFile.name == recordedFile.filename) {
+          throw new Error("Duplicated file(s)", {cause: "Duplicate"})
+        }
+      }
+    }
+  } catch (e) {
+    if (e.cause == "Duplicate") {
+      return res.status(400).json({
+        reason: "FILENAME_EXISTS",
+        message: "One or more file was found to have the same name as a previously uploaded one(s)"
+      })
+    }
+  }    
 
   // Loop through each file to upload to storage and record in database
- for (const file of files) {
+  for (const file of files) {
     let uploadFilename = `${userEmail}/${file.name}`
     
     // Upload to S3
