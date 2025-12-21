@@ -155,14 +155,6 @@ app.post("/documents", async (req, res) => {
         "AWS_code": uploadFileResponse.$metadata.httpStatusCode 
       })
     }
-
-    // Check if there's a duplicate file
-    // const filenameDuplicate = fs.existsSync(uploadPath)
-
-    // // If there is, check if content is the same by comparing the content's MD5 hash value
-    // if (filenameDuplicate) {
-    //   return res.status(400).send("FILENAME_EXISTS")
-    // }
     
     // Keep a record of each file that has been uploaded to storage to insert them into the database
     filesToInsert.push({
