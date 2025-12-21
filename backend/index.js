@@ -41,7 +41,7 @@ async function connect_mongo() {
 
 app.get("/", async (req, res) => {
   const bucket = {
-    Bucket: "ragtivity",
+    Bucket: S3_BUCKET_NAME,
   }
   const headBucketCommand = new HeadBucketCommand(bucket)
   const response = await s3client.send(headBucketCommand) 
