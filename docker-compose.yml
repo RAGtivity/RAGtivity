@@ -1,0 +1,25 @@
+services:
+  backend:
+    ports:
+      - "4000:4000"
+    build:
+        context: ./backend
+        dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+      - node_modules:/app/node_modules
+  
+  frontend:
+    ports:
+      - "5173:5173"
+    build:
+      context: ./website
+      dockerfile: Dockerfile
+    volumes:
+      - ./website:/app
+      # - node_modules:/app/node_modules
+
+volumes:
+  node_modules: 
