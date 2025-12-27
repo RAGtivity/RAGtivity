@@ -27,4 +27,4 @@ jobs:
     - name: Run linting for backend code
       run: cd backend && npm install && npm run lint
     - name: Run linting for frontend code
-      run: cd ../website && npm install && npm run lint
+      run: cd website && npm install && npm run lint
