@@ -27,8 +27,8 @@ jobs:
     - run: npm ci
     - run: cd backend
     - name: Run linting for backend code
-    - run: npm run lint
+      run: npm run lint
     - run: cd ..
     - run: cd website
     - name: Run linting for frontend code
-    - run: npm run lint
+      run: npm run lint
