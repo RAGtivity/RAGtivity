@@ -24,12 +24,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: cd backend
-    - run: npm ci
     - name: Run linting for backend code
-      run: npm run lint
-    - run: cd ..
-    - run: cd website
-    - run: npm ci 
+    - run: cd backend && npm ci && npm run lint
     - name: Run linting for frontend code
-      run: npm run lint
+    - run: cd ../website && npm ci && npm run lint
