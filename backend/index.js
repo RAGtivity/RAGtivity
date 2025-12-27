@@ -148,7 +148,7 @@ app.post("/documents", async (req, res) => {
           }
         }
         const deleteObjectsCommand = new DeleteObjectsCommand(deleteObjectsInput)
-        const response = await s3client.send(deleteObjectsCommand)
+        await s3client.send(deleteObjectsCommand)
       }
 
       return res.status(500).json({
@@ -172,7 +172,7 @@ app.post("/documents", async (req, res) => {
   }
   // Add newly added documents to the user's document in the database
   try {
-    const result = await usersCollection.updateOne(queryGetUser, queryAddFiles)
+    await usersCollection.updateOne(queryGetUser, queryAddFiles)
   }
   catch (err) {
     res.status(500).send("Something went wrong while adding document to database. Error message: ", err)
@@ -220,7 +220,7 @@ app.post("/delete_document", async (req, res) => {
   }
   
   try {
-    const deleteFileFromDB = await usersCollection.updateOne(queryIdentifyUser, queryDeleteFile)
+    await usersCollection.updateOne(queryIdentifyUser, queryDeleteFile)
 
   }
   catch (err) {
@@ -331,7 +331,7 @@ async function main() {
     await connect_mongo()
   }
   catch (err) {
-    console.error(`Error while connecting to MongoDB. `, e)
+    console.error(`Error while connecting to MongoDB. `, err)
   }
 
   app.listen(PORT, () => {
