@@ -1,12 +1,10 @@
 import express from 'express';
-import bcrypt, { hash } from 'bcrypt';
+import bcrypt from 'bcrypt';
 import cors from 'cors';
 import { MongoClient } from 'mongodb';
 import fileUpload from "express-fileupload"
-import path from "node:path"
 import dotenv from "dotenv"
 import ragRoutes from './ragRoutes.js';
-import fs from "fs"
 import {
   S3Client,
   HeadBucketCommand,
