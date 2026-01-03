@@ -33,8 +33,6 @@ services:
       - document_loader
 
   document_loader:
-    ports:
-      - "8001:8001"
     build:
       context: ./RAG/document_loader
       dockerfile: Dockerfile
