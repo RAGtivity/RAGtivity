@@ -2,7 +2,7 @@ import express from 'express';
 import axios from 'axios';
 
 const router = express.Router();
-const RAG_URL = process.env.RAG_URL || 'http://localhost:8000';
+const RAG_URL = process.env.RAG_URL || 'http://rag:8000';
 
 //query
 router.post('/query', async (req, res) => {
@@ -10,7 +10,7 @@ router.post('/query', async (req, res) => {
     const { question } = req.body;
     if (!question) return res.status(400).json({ error: 'Question is required' });
 
-    const response = await axios.get(`${RAG_URL}/`, {
+    const response = await axios.post(`${RAG_URL}/query`, {
       params: { query: question },
     });
 
