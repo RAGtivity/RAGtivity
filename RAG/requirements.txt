@@ -25,4 +25,4 @@ tqdm
 fastapi
 uvicorn
 pydantic
-
+pymongo[srv]

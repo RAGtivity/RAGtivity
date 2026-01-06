@@ -11,7 +11,7 @@ router.post('/query', async (req, res) => {
     const response = await fetch(`${RAG_URL}/query`, {
       method: "POST",
       headers: { 'Content-Type': 'application/json'},
-      body: JSON.stringify({question: question})
+      body: JSON.stringify({question: question, userId: req.cookies.userId})
     });
     const result = await response.json()
     return res.json(result);
