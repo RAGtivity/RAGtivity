@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import cors from 'cors';
-import { MongoClient, MongoServerError } from 'mongodb';
+import { MongoClient } from 'mongodb';
 import fileUpload from "express-fileupload"
 import dotenv from "dotenv"
 import ragRoutes from './ragRoutes.js';
@@ -147,6 +147,7 @@ app.post("/documents", async (req, res) => {
 
     chunk_and_embeddings = await response.json()
   } catch(err) {
+    console.error(err)
     return res.status(500).send("Something went wrong while trying to get the file chunked and get its embeddings")
   }
   // Build the insert query for later on. 
