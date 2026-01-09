@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir \
     python-multipart \
     pypdf \
     langchain-text-splitters \
-    langchain-huggingface
+    langchain-google-genai \
+    python-dotenv
 
 CMD ["uvicorn", "document_loader:app", "--host", "0.0.0.0", "--port", "8001"]

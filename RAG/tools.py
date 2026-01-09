@@ -1,5 +1,4 @@
 from langchain.tools import tool, ToolRuntime
-from database import vector_store
 from dataclasses import dataclass
 from pymongo import MongoClient
 from config import embeddings
