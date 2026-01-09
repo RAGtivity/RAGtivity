@@ -2,7 +2,6 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agents import create_rag_agent
-from database import vector_store
 from dataclasses import dataclass
 from pymongo import MongoClient
 import os
