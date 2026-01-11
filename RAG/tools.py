@@ -38,7 +38,7 @@ def retrieve_context(query: str, runtime: ToolRuntime[LangchainRuntimeContext]):
     results = mongoClient["ragtivity"]["chunked_documents"].aggregate([vectorSearchCriteria])
 
     serialized = "\n\n".join(
-        f"Source: {doc["filename"]} \nContent: {doc["text"]}"
+        f"<source> {doc["filename"]} </source> \n<content> {doc["text"]} </content>"
         for doc in results
     )
 
