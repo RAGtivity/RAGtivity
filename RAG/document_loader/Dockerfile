@@ -2,16 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY . .
+COPY requirements.txt .
 
-RUN pip install --no-cache-dir \
-    fastapi \
-    uvicorn \
-    python-multipart \
-    pypdf \
-    langchain-text-splitters \
-    langchain-google-genai \
-    langchain-community \
-    python-dotenv
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
 
 CMD ["uvicorn", "document_loader:app", "--host", "0.0.0.0", "--port", "8001"]
