@@ -1,5 +1,0 @@
-fastapi[all]          # Or [standard], [uvicorn], [httpx]; [all] is easiest
-uvicorn[standard]     # Needed to run the FastAPI app (ASGI server)
-numpy
-requests
-chromadb
