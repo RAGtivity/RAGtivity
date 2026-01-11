@@ -9,7 +9,7 @@ services:
       - .env
     volumes:
       - ./backend:/app
-      - node_modules:/app/node_modules
+      - backend_node_modules:/app/node_modules
 
   frontend:
     ports:
@@ -19,6 +19,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./website:/app
+      - frontend_node_modules:/app/node_modules
 
   rag:
     ports:
@@ -44,4 +45,5 @@ services:
       - .env
 
 volumes:
-  node_modules:
+  backend_node_modules:
+  frontend_node_modules:
