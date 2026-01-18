@@ -13,7 +13,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
       document_loader: ${{ steps.filter.outputs.document_loader }}
-      rag: ${{ steps.filter.outputs.rag }}
+      RAG: ${{ steps.filter.outputs.RAG }}
     
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
               - "frontend/**"
             document_loader: 
               - "document_loader/**"
-            rag:
+            RAG:
               - "RAG/**"
 
   build-backend:
@@ -54,3 +54,78 @@ jobs:
       - name: Push backend's image to the registry
         run: |
           docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/backend:latest 
+    
+  build-frontend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Login to DigitalOcean Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.DIGITALOCEAN_REGISTRY }}
+          username: ${{ secrets.DIGITALOCEAN_EMAIL }}
+          password: ${{ secrets.DIGITALOCEAN_TOKEN }}
+
+      - name: Build frontend's Docker image
+        run: |
+          cd frontend
+          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/frontend:latest .
+          
+      
+      - name: Push frontend's image to the registry
+        run: |
+          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/frontend:latest 
+  
+  build-document_loader:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.document_loader == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Login to DigitalOcean Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.DIGITALOCEAN_REGISTRY }}
+          username: ${{ secrets.DIGITALOCEAN_EMAIL }}
+          password: ${{ secrets.DIGITALOCEAN_TOKEN }}
+
+      - name: Build document_loader's Docker image
+        run: |
+          cd document_loader
+          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/document_loader:latest .
+          
+      
+      - name: Push document_loader's image to the registry
+        run: |
+          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/document_loader:latest 
+
+  build-RAG:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.RAG == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Login to DigitalOcean Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.DIGITALOCEAN_REGISTRY }}
+          username: ${{ secrets.DIGITALOCEAN_EMAIL }}
+          password: ${{ secrets.DIGITALOCEAN_TOKEN }}
+
+      - name: Build RAG's Docker image
+        run: |
+          cd RAG
+          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/RAG:latest .
+          
+      
+      - name: Push RAG's image to the registry
+        run: |
+          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/RAG:latest 
