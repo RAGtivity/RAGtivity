@@ -48,12 +48,12 @@ jobs:
       - name: Build backend's Docker image
         run: |
           cd backend
-          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/backend:latest .
+          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:backend .
           
       
       - name: Push backend's image to the registry
         run: |
-          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/backend:latest 
+          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:backend 
     
   build-frontend:
     needs: detect-changes
@@ -73,12 +73,12 @@ jobs:
       - name: Build frontend's Docker image
         run: |
           cd frontend
-          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/frontend:latest .
+          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:frontend .
           
       
       - name: Push frontend's image to the registry
         run: |
-          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/frontend:latest 
+          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:frontend 
   
   build-document_loader:
     needs: detect-changes
@@ -98,12 +98,12 @@ jobs:
       - name: Build document_loader's Docker image
         run: |
           cd document_loader
-          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/document_loader:latest .
+          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:document_loader .
           
       
       - name: Push document_loader's image to the registry
         run: |
-          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/document_loader:latest 
+          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:document_loader 
 
   build-RAG:
     needs: detect-changes
@@ -123,9 +123,9 @@ jobs:
       - name: Build RAG's Docker image
         run: |
           cd RAG
-          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/RAG:latest .
+          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:rag .
           
       
       - name: Push RAG's image to the registry
         run: |
-          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/RAG:latest 
+          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:rag 
