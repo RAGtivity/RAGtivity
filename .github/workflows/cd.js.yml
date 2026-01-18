@@ -1,0 +1,54 @@
+name: Build and push Docker images
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      document_loader: ${{ steps.filter.outputs.document_loader }}
+      rag: ${{ steps.filter.outputs.rag }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend: 
+              - "backend/**"
+            frontend:
+              - "frontend/**"
+            document_loader: 
+              - "document_loader/**"
+            rag:
+              - "RAG/**"
+
+  build-backend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Login to DigitalOcean Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.DIGITALOCEAN_REGISTRY }}
+          username: ${{ secrets.DIGITALOCEAN_EMAIL }}
+          password: ${{ secrets.DIGITALOCEAN_TOKEN }}
+
+      - name: Build backend's Docker image
+        run: |
+          cd backend
+          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/backend:latest .
+          
+      
+      - name: Push backend's image to the registry
+        run: |
+          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/backend:latest 
