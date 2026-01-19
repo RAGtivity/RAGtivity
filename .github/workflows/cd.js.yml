@@ -129,3 +129,19 @@ jobs:
       - name: Push RAG's image to the registry
         run: |
           docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:rag 
+  
+  cleanup-registry:
+    needs:
+      - build-backend
+      - build-frontend
+      - build-document_loader
+      - build-RAG
+    if: always()
+
+    steps:
+      - name: Install doctl 
+        uses: digitalocean/action-doctl@v2
+        with: ${{ secrets.DIGITALOCEAN_TOKEN }}
+      
+      - name: Cleanup dangling images in the registry
+        run: doctl registry garbage-collection start --include-untagged-manifests --force
