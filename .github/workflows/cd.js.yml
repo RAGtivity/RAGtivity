@@ -137,6 +137,7 @@ jobs:
       - build-document_loader
       - build-RAG
     if: always()
+    runs-on: ubuntu-latest
 
     steps:
       - name: Install doctl 
