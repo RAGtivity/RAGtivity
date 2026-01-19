@@ -62,7 +62,7 @@ app.get("/", async (req, res) => {
 
 }) 
 
-// Get all user's document 
+// Get all user's document
 app.get("/documents", async (req, res) => {
   const userEmail = req.query.email
 
