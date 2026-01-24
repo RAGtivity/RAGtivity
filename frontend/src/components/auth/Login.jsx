@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router'
 import PropTypes from "prop-types"
 
+const BACKEND_ENDPOINT = import.meta.env.VITE_BACKEND_ENDPOINT || "http://localhost:4000"
+
 export default function Login({ setLoggedInEmail }) {
   const [formData, setFormData] = useState({
     email: '',
@@ -47,7 +49,7 @@ export default function Login({ setLoggedInEmail }) {
     setIsLoading(true)
     try {
       // Try to log in with backend
-      const res = await fetch('http://localhost:4000/login', {
+      const res = await fetch(BACKEND_ENDPOINT + "/login", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

@@ -15,4 +15,10 @@ export default defineConfig([
       "react/react-in-jsx-scope": "off"
     } 
   },
+  {
+    files: ["vite.config.js"],
+    languageOptions: {
+      globals: globals.node
+    }
+  }
 ]);

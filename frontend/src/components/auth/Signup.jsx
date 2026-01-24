@@ -2,6 +2,8 @@ import { useState } from 'react';
 import './Signup.css';
 import { NavLink, useNavigate } from 'react-router';
 
+const BACKEND_ENDPOINT = import.meta.env.VITE_BACKEND_ENDPOINT || "http://localhost:4000"
+
 export default function Signup() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
@@ -39,7 +41,7 @@ export default function Signup() {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:4000/signup', {
+      const res = await fetch(BACKEND_ENDPOINT + "/signup", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
