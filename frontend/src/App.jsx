@@ -7,6 +7,8 @@ import Signup from './components/auth/Signup'
 import Settings from './components/settings/setting'
 import { BrowserRouter, Routes, Route } from 'react-router'
 
+const BACKEND_ENDPOINT = import.meta.env.VITE_BACKEND_ENDPOINT || "http://localhost:4000"
+
 function App() {
   const [loggedInEmail, setLoggedInEmail] = useState("")
   const [documents, setDocuments] = useState([])
@@ -20,7 +22,7 @@ function App() {
   // Fetch documents from database by user email
   async function fetchDocuments() {
     if (loggedInEmail != "") {
-      let response = await fetch("http://localhost:4000/documents?email=" + loggedInEmail)
+      let response = await fetch(BACKEND_ENDPOINT + "/documents?email=" + loggedInEmail)
       response = await response.json()
 
       let retrievedDocuments = response.documents
@@ -44,7 +46,7 @@ function App() {
       formData.append("files", file)
     )
     // Send files to backend server
-    let response = await fetch("http://localhost:4000/documents", {
+    let response = await fetch(BACKEND_ENDPOINT + "/documents", {
       method: "POST",
       body: formData 
     })
@@ -68,7 +70,7 @@ function App() {
     formData.append("email", loggedInEmail)
     formData.append("filename", filenameToRemove)
     
-    const response = await fetch("http://localhost:4000/delete_document", {
+    const response = await fetch(BACKEND_ENDPOINT +"/delete_document", {
       method: "POST",
       body: formData
     })

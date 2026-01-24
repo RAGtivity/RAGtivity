@@ -3,6 +3,8 @@ import Add_document from "../main/Add_document"
 import Send from "../main/Send"
 import PropTypes from "prop-types"
 
+const BACKEND_ENDPOINT = import.meta.env.VITE_BACKEND_ENDPOINT || "http://localhost:4000"
+
 export default function Main({loggedInEmail, onAddDocuments}) {
     const [query, setQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +21,7 @@ export default function Main({loggedInEmail, onAddDocuments}) {
         setQuery('');
         
         try {
-            const response = await fetch('http://localhost:4000/rag/query', {
+            const response = await fetch(BACKEND_ENDPOINT + '/rag/query', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
