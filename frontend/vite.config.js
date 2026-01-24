@@ -3,18 +3,14 @@
   import tailwindcss from '@tailwindcss/vite'
 
   // https://vite.dev/config/
-  export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, process.cwd())
-
-    return {
+  export default defineConfig({
       plugins: [
         react(),
         tailwindcss(),
       ],
       server: {
         host: "0.0.0.0",
-        allowedHosts: env.SERVER_DOMAIN ? [env.SERVER_DOMAIN] : undefined,
+        allowedHosts: process.env.VITE_SERVER_DOMAIN ? [process.env.VITE_SERVER_DOMAIN] : undefined,
         port: 5173
       }
-    }
   })
