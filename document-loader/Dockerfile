@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir \
     langchain-community \
     python-dotenv
 
-CMD ["uvicorn", "document_loader:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "document-loader:app", "--host", "0.0.0.0", "--port", "8001"]

@@ -30,13 +30,13 @@ services:
     volumes:
       - ./RAG:/app
     depends_on:
-      - document_loader
+      - document-loader
     env_file:
       - .env
 
-  document_loader:
+  document-loader:
     build:
-      context: ./document_loader
+      context: ./document-loader
       dockerfile: Dockerfile
     env_file:
       - .env

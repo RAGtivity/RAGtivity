@@ -15,7 +15,7 @@ class LangchainRuntimeContext:
     mongoClient: MongoClient
     userId: str
 
-DOCUMENT_LOADER_URL = "http://document_loader:8001/load/pdf"
+DOCUMENT_LOADER_URL = "http://document-loader:8001/load/pdf"
 UPLOAD_DIR = "/uploaded_docs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -82,6 +82,7 @@ def query_rag(request: QueryRequest):
 #this is the uploading document that call the chunking service
 @app.post("/upload")
 def upload_document(file: UploadFile = File(...)):
+    print("Upload here -------------------")
     # Call document loader container
     response = requests.post(
         DOCUMENT_LOADER_URL,
