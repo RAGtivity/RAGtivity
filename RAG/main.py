@@ -74,7 +74,7 @@ def query_rag(request: QueryRequest):
             except Exception:
                 pass
 
-        # Remove Source blocks from answer text
+        # Remove Source blocks from answer text 
         response_text = re.sub(r"Source: ({.*?})", "", content, flags=re.DOTALL).strip()
 
     return {"answer": response_text, "sources": sources}
