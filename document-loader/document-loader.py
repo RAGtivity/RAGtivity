@@ -25,7 +25,7 @@ def split_and_get_embeddings(docs_content):
 def load_pdf(file: UploadFile):
     # UploadFile returns a SpooledTemporaryFile, but we need a NamedTemporaryFile 
     with tempfile.NamedTemporaryFile(delete=True) as tmpfile:
-        # Copy the `file` object to tmpfile, which is a NamedTemporaryFile
+        # Copy the `file` object to tmpfile, which is a NamedTemporaryFile 
         with open(tmpfile.name, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         print("ASDADASDASDADASDADSSDA")
