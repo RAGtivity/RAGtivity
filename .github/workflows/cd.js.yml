@@ -10,7 +10,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
-      document_loader: ${{ steps.filter.outputs.document_loader }}
+      document-loader: ${{ steps.filter.outputs.document-loader }}
       RAG: ${{ steps.filter.outputs.RAG }}
     
     steps:
@@ -23,8 +23,8 @@ jobs:
               - "backend/**"
             frontend:
               - "frontend/**"
-            document_loader: 
-              - "document_loader/**"
+            document-loader: 
+              - "document-loader/**"
             RAG:
               - "RAG/**"
 
@@ -78,9 +78,9 @@ jobs:
         run: |
           docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:frontend 
   
-  build-document_loader:
+  build-document-loader:
     needs: detect-changes
-    if: needs.detect-changes.outputs.document_loader == 'true'
+    if: needs.detect-changes.outputs.document-loader == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -93,15 +93,15 @@ jobs:
           username: ${{ secrets.DIGITALOCEAN_EMAIL }}
           password: ${{ secrets.DIGITALOCEAN_TOKEN }}
 
-      - name: Build document_loader's Docker image
+      - name: Build document-loader's Docker image
         run: |
-          cd document_loader
-          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:document_loader .
+          cd document-loader
+          docker build -t ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:document-loader .
           
       
-      - name: Push document_loader's image to the registry
+      - name: Push document-loader's image to the registry
         run: |
-          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:document_loader 
+          docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:document-loader 
 
   build-RAG:
     needs: detect-changes
@@ -132,7 +132,7 @@ jobs:
     needs:
       - build-backend
       - build-frontend
-      - build-document_loader
+      - build-document-loader
       - build-RAG
     if: always()
     runs-on: ubuntu-latest
