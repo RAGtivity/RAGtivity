@@ -11,7 +11,7 @@ import {
   S3Client,
   HeadBucketCommand,
   PutObjectCommand,
-  DeleteObjectsCommand, 
+  DeleteObjectsCommand,
   DeleteObjectCommand
 } from "@aws-sdk/client-s3"
 
