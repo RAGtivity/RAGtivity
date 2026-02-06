@@ -10,7 +10,7 @@ embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001", o
 
 def split_and_get_embeddings(docs_content):
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
+        chunk_size=1000, 
         chunk_overlap=200,
         add_start_index=True
     )

@@ -3,6 +3,8 @@ name: Build and push Docker images
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
   detect-changes:
@@ -127,7 +129,43 @@ jobs:
       - name: Push RAG's image to the registry
         run: |
           docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:rag 
-  
+
+  webhook-registry:
+    needs: 
+      - detect-changes
+      - build-backend
+      - build-frontend
+      - build-document-loader
+      - build-RAG
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create List of Changed Paths
+        id: create-list
+        run: |
+          list=()
+          if [[ "${{ steps.filter.outputs.backend }}" == "true" ]]; then
+              list+=("backend")
+          fi
+          if [[ "${{ steps.filter.outputs.frontend }}" == "true" ]]; then
+              list+=("frontend")
+          fi
+          if [[ "${{ steps.filter.outputs.document-loader }}" == "true" ]]; then
+              list+=("document-loader")
+          fi
+          if [[ "${{ steps.filter.outputs.RAG }}" == "true" ]]; then
+              list+=("rag")
+          fi
+
+          # Convert array to comma-separated string
+          echo "changed_paths=${list[*]}" >> $GITHUB_ENV
+
+      - name: cURL request to webhook server
+        run: |
+          curl -X POST \
+              -H "Content-Type: application/json" \
+              -d '{"updated": [\"${{ env.changed_paths }}\"]}' \
+              ${{ secrets.REGISTRY_WEBHOOK_ENDPOINT }}
+
   cleanup-registry:
     needs:
       - build-backend
