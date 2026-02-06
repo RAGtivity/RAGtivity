@@ -137,6 +137,7 @@ jobs:
       - build-frontend
       - build-document-loader
       - build-RAG
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Create List of Changed Paths
