@@ -159,6 +159,7 @@ jobs:
 
           # Convert array to comma-separated string
           echo "changed_paths=${list[*]}" >> $GITHUB_ENV
+          echo ${{ env.changed_paths }}
 
       - name: cURL request to webhook server
         run: |
