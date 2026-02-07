@@ -164,12 +164,12 @@ jobs:
       - name: cURL request to webhook server
         run: |
           echo ${{ env.changed_paths }}
-          json_payload=${jq --compact-output --null-input '$ARGS.positional' --args -- "${{ env.changed_paths }}"}
-          echo $json_payload
+          json_payload=$(jq --null-input --compact-output --argjson changed_paths "$(printf '%s\n' "${{ env.changed_paths }}" | jq -R . | jq -s .)" '{updated: $changed_paths}')
+          echo ${json_payload}
 
           curl -X POST \
               -H "Content-Type: application/json" \
-              -d '{"updated": [\"${{ env.changed_paths }}\"]}' \
+              -d '${json_payload}' \
               ${{ secrets.REGISTRY_WEBHOOK_ENDPOINT }}
 
   cleanup-registry:
