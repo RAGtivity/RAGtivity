@@ -144,16 +144,16 @@ jobs:
         id: create-list
         run: |
           list=()
-          if [[ "${{ steps.filter.outputs.backend }}" == "true" ]]; then
+          if [[ "${{ needs.detect-changes.outputs.backend }}" == "true" ]]; then
             list+=("backend")
           fi
-          if [[ "${{ steps.filter.outputs.frontend }}" == "true" ]]; then
+          if [[ "${{ needs.detect-changes.outputs.frontend }}" == "true" ]]; then
             list+=("frontend")
           fi
-          if [[ "${{ steps.filter.outputs.document-loader }}" == "true" ]]; then
+          if [[ "${{ needs.detect-changes.outputs.document-loader }}" == "true" ]]; then
             list+=("document-loader")
           fi
-          if [[ "${{ steps.filter.outputs.RAG }}" == "true" ]]; then
+          if [[ "${{ needs.detect-changes.outputs.RAG }}" == "true" ]]; then
             list+=("rag")
           fi
 
