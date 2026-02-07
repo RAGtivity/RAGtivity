@@ -158,12 +158,15 @@ jobs:
           fi
 
           # Convert array to comma-separated string
-          json_payload=$(jq -n --argjson updated "$(printf '%s\n' "${list[@]}" | jq -R . | jq -s .)" '{updated: $updated}')
-          echo "json_payload=${json_payload}" >> $GITHUB_ENV
-
+          echo "changed_paths=${list[*]}" >> $GITHUB_ENV
+          echo ${{ env.changed_paths }}
 
       - name: cURL request to webhook server
         run: |
+          echo ${{ env.changed_paths }}
+          json_payload=${jq --compact-output --null-input '$ARGS.positional' --args -- "${{ env.changed_paths }}"}
+          echo $json_payload
+
           curl -X POST \
               -H "Content-Type: application/json" \
               -d '{"updated": [\"${{ env.changed_paths }}\"]}' \
