@@ -145,32 +145,42 @@ jobs:
         run: |
           list=()
           if [[ "${{ steps.filter.outputs.backend }}" == "true" ]]; then
-              list+=("backend")
+            list+=("backend")
           fi
           if [[ "${{ steps.filter.outputs.frontend }}" == "true" ]]; then
-              list+=("frontend")
+            list+=("frontend")
           fi
           if [[ "${{ steps.filter.outputs.document-loader }}" == "true" ]]; then
-              list+=("document-loader")
+            list+=("document-loader")
           fi
           if [[ "${{ steps.filter.outputs.RAG }}" == "true" ]]; then
-              list+=("rag")
+            list+=("rag")
           fi
 
-          # Convert array to comma-separated string
-          echo "changed_paths=${list[*]}" >> $GITHUB_ENV
-          echo ${{ env.changed_paths }}
+          # Convert array to space-separated string
+          changed_paths="${list[*]}"
+
+          echo "changed_paths=$changed_paths" >> "$GITHUB_ENV"
+          echo "Changed paths: $changed_paths"
+
 
       - name: cURL request to webhook server
         run: |
-          echo ${{ env.changed_paths }}
-          json_payload=$(jq --null-input --compact-output --argjson changed_paths "$(printf '%s\n' "${{ env.changed_paths }}" | jq -R . | jq -s .)" '{updated: $changed_paths}')
-          echo ${json_payload}
+          echo "Changed paths from env: $changed_paths"
+
+          # Convert space separated string to JSON
+          json_payload=$(printf '%s\n' $changed_paths \
+            | jq -R . \
+            | jq -s '{updated: .}')
+
+          echo "JSON payload:"
+          echo "$json_payload"
 
           curl -X POST \
-              -H "Content-Type: application/json" \
-              -d '${json_payload}' \
-              ${{ secrets.REGISTRY_WEBHOOK_ENDPOINT }}
+            -H "Content-Type: application/json" \
+            -d "$json_payload" \
+            "${{ secrets.REGISTRY_WEBHOOK_ENDPOINT }}"
+
 
   cleanup-registry:
     needs:
