@@ -82,7 +82,6 @@ def query_rag(request: QueryRequest):
 #this is the uploading document that call the chunking service
 @app.post("/upload")
 def upload_document(file: UploadFile = File(...)):
-    print("Upload here -------------------")
     # Call document loader container
     response = requests.post(
         DOCUMENT_LOADER_URL,

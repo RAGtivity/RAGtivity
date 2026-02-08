@@ -28,7 +28,6 @@ def load_pdf(file: UploadFile):
         # Copy the `file` object to tmpfile, which is a NamedTemporaryFile
         with open(tmpfile.name, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        print("ASDADASDASDADASDADSSDA")
         # Open the file
         docs = PyPDFLoader(tmpfile.name).load()
         # PyPDFLoader loads the file and separates them per page. Combine the pages into a single large string of texts for the whole docs content
