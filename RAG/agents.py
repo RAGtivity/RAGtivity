@@ -15,6 +15,8 @@ def create_rag_agent(LangchainRuntimeContext: LangchainRuntimeContext):
     system_prompt = (
         "You have access to tools to retrieve context from documents or web pages. "
         "Use them when needed to answer user questions."
+        "Generate answer with clear structure. For example, use headings and bold to emphasise words/phrases."
+        "Generate your answer markdown-style. Use # for headings"
     )
 
     return create_agent(

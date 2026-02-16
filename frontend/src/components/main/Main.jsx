@@ -1,7 +1,8 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Add_document from "../main/Add_document"
 import Send from "../main/Send"
 import PropTypes from "prop-types"
+import ReactMarkdown from 'react-markdown'
 
 const BACKEND_ENDPOINT = import.meta.env.VITE_BACKEND_ENDPOINT || "http://localhost:4000"
 
@@ -119,9 +120,10 @@ export default function Main({loggedInEmail, onAddDocuments}) {
                                         </div>
                                     ) : (
                                         //AI Response
-                                        <div className="bg-lightgrey/20 rounded-lg p-4 w-full mb-4">
-                                            <div className="mb-4">
-                                                <p className="text-white/80 leading-relaxed">{item.content}</p>
+                                        <div className="bg-lightgrey/20 rounded-lg p-4 w-9/10 mb-4">
+                                            <div className="mb-4 prose prose-invert max-w-none">
+                                                {/* <p className="text-white/80 leading-relaxed">{item.content}</p> */}
+                                                <ReactMarkdown>{item.content}</ReactMarkdown>
                                             </div>
                                             
                                             {/* Sources Section */}
