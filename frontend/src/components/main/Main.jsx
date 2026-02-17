@@ -10,6 +10,11 @@ export default function Main({loggedInEmail, onAddDocuments}) {
     const [query, setQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [conversation, setConversation] = useState([]);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    const handleScroll = (e) => {
+        setIsScrolled(e.target.scrollTop > 0);
+    };
 
     const handleSendQuery = async (queryText) => {
         if (!queryText.trim()) return;
@@ -70,12 +75,14 @@ export default function Main({loggedInEmail, onAddDocuments}) {
     const hasConversation = conversation.length > 0 || isLoading;
 
     return (
-        <div className="w-full h-screen flex flex-col items-center bg-121212 p-8">
+        <div className="w-full h-screen flex flex-col items-center bg-121212 p-8 pt-0">
             <div className="w-full max-w-4xl flex flex-col h-full">
                 {/* Header */}
-                <div className="text-center mb-8">
+                <div className="text-center mb-8 pt-8 pb-4 relative">
                     <p className="text-4xl font-medium">Interactive RAG</p>
                     <p className="text-white/60">Build your own AI knowledge</p>
+                    {/* Gradient Border Bottom */}
+                    <div className={`absolute bottom-0 left-0 w-full h-[1px] transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-0'} bg-linear-to-r from-transparent via-gray-500 to-transparent`} />
                 </div>
                 
                 {/* Default State - Input in middle */}
@@ -108,7 +115,10 @@ export default function Main({loggedInEmail, onAddDocuments}) {
                 {hasConversation && (
                     <>
                         {/* Conversation Area - Scrollable */}
-                        <div className="flex-1 overflow-auto space-y-4 mb-6">
+                        <div 
+                            className="flex-1 overflow-auto space-y-4 mb-6"
+                            onScroll={handleScroll}
+                        >
                             {conversation.map((item, index) => (
                                 <div key={index} className="w-full">
                                     {item.type === 'question' ? (
