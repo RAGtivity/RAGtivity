@@ -127,7 +127,59 @@ jobs:
       - name: Push RAG's image to the registry
         run: |
           docker push ${{ secrets.DIGITALOCEAN_REGISTRY}}/ragtivity:rag 
-  
+
+  webhook-registry:
+    needs: 
+      - detect-changes
+      - build-backend
+      - build-frontend
+      - build-document-loader
+      - build-RAG
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create List of Changed Paths
+        id: create-list
+        run: |
+          list=()
+          if [[ "${{ needs.detect-changes.outputs.backend }}" == "true" ]]; then
+            list+=("backend")
+          fi
+          if [[ "${{ needs.detect-changes.outputs.frontend }}" == "true" ]]; then
+            list+=("frontend")
+          fi
+          if [[ "${{ needs.detect-changes.outputs.document-loader }}" == "true" ]]; then
+            list+=("document-loader")
+          fi
+          if [[ "${{ needs.detect-changes.outputs.RAG }}" == "true" ]]; then
+            list+=("rag")
+          fi
+
+          # Convert array to space-separated string
+          changed_paths="${list[*]}"
+
+          echo "changed_paths=$changed_paths" >> "$GITHUB_ENV"
+          echo "Changed paths: $changed_paths"
+
+
+      - name: cURL request to webhook server
+        run: |
+          echo "Changed paths from env: $changed_paths"
+
+          # Convert space separated string to JSON
+          json_payload=$(printf '%s\n' $changed_paths \
+            | jq -R . \
+            | jq -s '{updated: .}')
+
+          echo "JSON payload:"
+          echo "$json_payload"
+
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "$json_payload" \
+            "${{ secrets.REGISTRY_WEBHOOK_ENDPOINT }}"
+
+
   cleanup-registry:
     needs:
       - build-backend

@@ -10,7 +10,7 @@ embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001", o
 
 def split_and_get_embeddings(docs_content):
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
+        chunk_size=1000, 
         chunk_overlap=200,
         add_start_index=True
     )
@@ -28,7 +28,6 @@ def load_pdf(file: UploadFile):
         # Copy the `file` object to tmpfile, which is a NamedTemporaryFile 
         with open(tmpfile.name, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        print("ASDADASDASDADASDADSSDA")
         # Open the file
         docs = PyPDFLoader(tmpfile.name).load()
         # PyPDFLoader loads the file and separates them per page. Combine the pages into a single large string of texts for the whole docs content
