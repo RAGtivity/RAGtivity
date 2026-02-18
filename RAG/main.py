@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from agents import create_rag_agent
 from dataclasses import dataclass
@@ -9,6 +10,7 @@ import shutil
 import re
 import ast
 import requests
+import json
 
 @dataclass
 class LangchainRuntimeContext:
@@ -55,29 +57,44 @@ def root():
 
 
 @app.post("/query")
-def query_rag(request: QueryRequest):
-    response_text = ""
-    sources = []
+async def query_rag(request: QueryRequest):
+    async def chat_generator():
+        sources = []
+        async for message_chunk, metadata in agent.astream(
+            {"messages": [{"role": "user", "content": request.question}]},
+            stream_mode="messages",
+            context=LangchainRuntimeContext(mongoClient=app.mongo_client, userId=request.userId)
+        ):
+            if message_chunk.type != "ai" and message_chunk.type != "AIMessageChunk":
+                continue
+            # message_chunk is an instance of AiMessage or AIMessageChunk
+            content = message_chunk.content
+            
+            # Extract Source blocks
+            source_matches = re.findall(r"Source: ({.*?})", content, re.DOTALL)
+            current_sources = []
+            for match in source_matches:
+                try:
+                    src = ast.literal_eval(match)
+                    sources.append(src)
+                    current_sources.append(src)
+                except Exception:
+                    pass
 
-    for event in agent.stream(
-        {"messages": [{"role": "user", "content": request.question}]},
-        stream_mode="values",
-        context=LangchainRuntimeContext(mongoClient=app.mongo_client, userId=request.userId)
-    ):
-        content = event["messages"][-1].content
+            # Clean content for the stream
+            clean_content = re.sub(r"Source: ({.*?})", "", content, flags=re.DOTALL)
+            
+            response_data = {
+                "answer": clean_content,
+                "sources": current_sources
+            }
+            # Yield as streaming data. Use [BREAK] to indicate that it is the end of the current stream/chunk
+            yield f"{json.dumps(response_data)}[BREAK]"
+        
+        # Yield [DONE] to indicate the text has been fully sent
+        yield "[DONE]"
 
-        # Extract all Source: {...} blocks
-        source_matches = re.findall(r"Source: ({.*?})", content, re.DOTALL)
-        for match in source_matches:
-            try:
-                sources.append(ast.literal_eval(match))
-            except Exception:
-                pass
-
-        # Remove Source blocks from answer text 
-        response_text = re.sub(r"Source: ({.*?})", "", content, flags=re.DOTALL).strip()
-
-    return {"answer": response_text, "sources": sources}
+    return StreamingResponse(chat_generator(), media_type="text/event-stream")
 
 #this is the uploading document that call the chunking service
 @app.post("/upload")
