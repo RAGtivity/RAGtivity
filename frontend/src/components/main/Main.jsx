@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Add_document from "../main/Add_document"
 import Send from "../main/Send"
 import PropTypes from "prop-types"
@@ -11,6 +11,16 @@ export default function Main({loggedInEmail, onAddDocuments}) {
     const [isLoading, setIsLoading] = useState(false);
     const [conversation, setConversation] = useState([]);
     const [isScrolled, setIsScrolled] = useState(false);
+    const messagesEndRef = useRef(null);
+
+    // Scroll to bottom of the conversation container
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [conversation, isLoading]);
 
     const handleScroll = (e) => {
         setIsScrolled(e.target.scrollTop > 0);
@@ -250,6 +260,9 @@ export default function Main({loggedInEmail, onAddDocuments}) {
                                     <p className="text-white/60">Thinking...</p>
                                 </div>
                             )}
+
+                            {/* This div is at the bottom of the conversation container, so it will scroll to the bottom when conversation is loading */}
+                            <div ref={messagesEndRef} />
                         </div>
                         
                         {/* Input Area - Fixed at bottom */}
