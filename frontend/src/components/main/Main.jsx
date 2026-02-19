@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Add_document from "../main/Add_document"
 import Send from "../main/Send"
 import PropTypes from "prop-types"
@@ -11,6 +11,16 @@ export default function Main({loggedInEmail, onAddDocuments}) {
     const [isLoading, setIsLoading] = useState(false);
     const [conversation, setConversation] = useState([]);
     const [isScrolled, setIsScrolled] = useState(false);
+    const messagesEndRef = useRef(null);
+
+    // Scroll to bottom of the conversation container
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [conversation, isLoading]);
 
     const handleScroll = (e) => {
         setIsScrolled(e.target.scrollTop > 0);
@@ -26,7 +36,15 @@ export default function Main({loggedInEmail, onAddDocuments}) {
         setConversation(newConversation);
         setQuery('');
         
+        // Add a placeholder for the AI response
+        setConversation(prev => [...prev, { 
+            type: 'answer', 
+            content: '', 
+            sources: [] 
+        }]);
+
         try {
+            // Get streaming response from the backend
             const response = await fetch(BACKEND_ENDPOINT + '/rag/query', {
                 method: 'POST',
                 headers: {
@@ -39,24 +57,79 @@ export default function Main({loggedInEmail, onAddDocuments}) {
             if (!response.ok) {
                 throw new Error('Failed to query RAG pipeline');
             }
-
-            const result = await response.json();
-            console.log('RAG query successful:', result);
             
-            //add response
-            setConversation(prev => [...prev, { 
-                type: 'answer', 
-                content: result.answer || result.response || 'No answer received',
-                sources: result.sources || result.metadata || []
-            }]);
+            // Use reader and decoder since response will be a stream
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let buffer = '';
+            
+            // Iterate through the reader until all chunked responses are streamed
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value, { stream: true });
+                buffer += chunk;
+                
+                // Chunked messages are ended with a [BREAK] signal
+                const lines = buffer.split('[BREAK]');
+                // Keep text after [BREAK] in case that the chunk message ends before the intended [BREAK]
+                buffer = lines.pop(); 
+                
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    // If line is empty, continue
+                    if (!trimmedLine) continue;
+                    if (trimmedLine === "[DONE]") continue;
+                    
+                    try {
+                        // Data is a JSON of {answer, sources}
+                        const data = JSON.parse(trimmedLine);
+                        
+                        setConversation(prev => {
+                            // Keep previous conversation
+                            const newConv = [...prev];
+                            const lastIdx = newConv.length - 1;
+                            
+                            const updatedMessage = { ...newConv[lastIdx] };
+                            
+                            // data.answer contains the new message from the stream response
+                            if (data.answer) {
+                                updatedMessage.content += data.answer;
+                            }
+                            
+                            // Handle data source
+                            if (data.sources && data.sources.length > 0) {
+                                const existingSources = updatedMessage.sources || [];
+                                const newSources = data.sources.filter(ns => 
+                                    !existingSources.some(es => 
+                                        JSON.stringify(es) === JSON.stringify(ns)
+                                    )
+                                );
+                                updatedMessage.sources = [...existingSources, ...newSources];
+                            }
+                            
+                            // Set new conversation
+                            newConv[lastIdx] = updatedMessage;
+                            return newConv;
+                        });
+                    } catch (e) {
+                        console.error("Error parsing stream JSON", e, "Line:", trimmedLine);
+                    }
+                }
+            }
             
         } catch (error) {
             console.error('Query failed:', error);
-            setConversation(prev => [...prev, { 
-                type: 'answer', 
-                content: 'Failed to get response. Please try again.',
-                sources: []
-            }]);
+            // If fails, generate failed text instead
+            setConversation(prev => {
+                const newConv = [...prev];
+                const lastIdx = newConv.length - 1;
+                if (newConv[lastIdx].type === 'answer' && !newConv[lastIdx].content) {
+                    newConv[lastIdx].content = 'Failed to get response. Please try again.';
+                }
+                return newConv;
+            });
         } finally {
             setIsLoading(false);
         }
@@ -132,7 +205,6 @@ export default function Main({loggedInEmail, onAddDocuments}) {
                                         //AI Response
                                         <div className="bg-lightgrey/20 rounded-lg p-4 w-9/10 mb-4">
                                             <div className="mb-4 prose prose-invert max-w-none">
-                                                {/* <p className="text-white/80 leading-relaxed">{item.content}</p> */}
                                                 <ReactMarkdown>{item.content}</ReactMarkdown>
                                             </div>
                                             
@@ -188,6 +260,9 @@ export default function Main({loggedInEmail, onAddDocuments}) {
                                     <p className="text-white/60">Thinking...</p>
                                 </div>
                             )}
+
+                            {/* This div is at the bottom of the conversation container, so it will scroll to the bottom when conversation is loading */}
+                            <div ref={messagesEndRef} />
                         </div>
                         
                         {/* Input Area - Fixed at bottom */}
